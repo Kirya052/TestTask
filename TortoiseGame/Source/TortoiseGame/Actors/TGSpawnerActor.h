@@ -9,6 +9,8 @@
 
 
 class ATGBaseAICharacter;
+class UNiagaraSystem;
+class UNiagaraComponent;
 UCLASS()
 class TORTOISEGAME_API ATGSpawnerActor : public AActor
 {
@@ -21,19 +23,31 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnerMesh")
-	class UStaticMeshComponent* SpawnerMesh;
+	class UStaticMeshComponent* SpawnerMeshComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI Spawner")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner")
 	TSubclassOf<ATGBaseAICharacter> CharacterClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI Spawner")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner")
 	EMovementType MovementType = EMovementType::Move;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI Spawner")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner")
 	float SpawnDelay = 1.0f;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, meta = (MakeEditWidget))
-	FVector FinishLocation = FVector::ZeroVector;
+	AActor* FinishLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner| SpawnEffect")
+	UNiagaraSystem* SpawnNiagaraSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner| SpawnEffect")
+	UNiagaraSystem* FinishNiagaraSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner| SpawnEffect")
+	class USoundBase* SpawnSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner| SpawnEffect")
+	FVector ParticleScale = FVector(1.0f, 1.0f, 1.0f);
 
 	UFUNCTION()
 	void TryToSpawnAICharacter(EMovementType MoveType);
@@ -41,7 +55,12 @@ protected:
 private:
 	bool bIsSpawning = false;
 
+	UNiagaraComponent* SpawnerEffect;
+	UNiagaraComponent* FinishEffect;
+
 	void ChangeSpawningState();
 
 	void SetBlackBoardValue(ATGBaseAICharacter* Character);
+
+	void SpawnEffects();
 };

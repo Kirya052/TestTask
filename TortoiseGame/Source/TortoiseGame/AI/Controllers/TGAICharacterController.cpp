@@ -29,3 +29,17 @@ void ATGAICharacterController::SetBlackBoardValue(FVector StartPosition, FVector
 		Blackboard->SetValueAsEnum(BB_MovementType, uint8(MoveType));
 	}
 }
+
+void ATGAICharacterController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+	Super::OnMoveCompleted(RequestID, Result);
+	
+	if (!Result.IsSuccess())
+	{
+		return;
+	}
+	if (CachedAICharacter.IsValid())
+	{
+		CachedAICharacter->PlayFinishSound();
+	}
+}

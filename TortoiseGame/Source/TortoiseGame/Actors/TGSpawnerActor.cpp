@@ -6,11 +6,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "AI/Characters/TGBaseAICharacter.h"
 #include "AI/Controllers/TGAICharacterController.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 
 // Sets default values
 ATGSpawnerActor::ATGSpawnerActor()
 {
-	SpawnerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpawnerMesh"));
+	SpawnerMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpawnerMeshComponent"));
 }
 
 void ATGSpawnerActor::BeginPlay()
@@ -31,9 +34,11 @@ void ATGSpawnerActor::TryToSpawnAICharacter(EMovementType MoveType)
 		return;
 	}
 
+	SpawnEffects();
+
 	bIsSpawning = true;
 
-	const FVector ActorLocation = GetActorLocation() + FVector(100.0f, 100.0f, 10.f);
+	const FVector ActorLocation = GetActorLocation();
 	const FRotator ActorRotation = GetActorRotation();
 
 	ATGBaseAICharacter* AICharacter = GetWorld()->SpawnActor<ATGBaseAICharacter>(CharacterClass, ActorLocation, ActorRotation);
@@ -52,7 +57,7 @@ void ATGSpawnerActor::TryToSpawnAICharacter(EMovementType MoveType)
 }
 
 void ATGSpawnerActor::ChangeSpawningState()
-{
+{	
 	bIsSpawning = false;
 }
 
@@ -61,8 +66,19 @@ void ATGSpawnerActor::SetBlackBoardValue(ATGBaseAICharacter* Character)
 	ATGAICharacterController* CachedController = Cast<ATGAICharacterController>(Character->Controller);
 	if (CachedController)
 	{
-		CachedController->SetBlackBoardValue(GetActorLocation(), FinishLocation + GetActorLocation(), Character->MovementType);
-		UE_LOG(LogTemp, Warning, TEXT("Hello"));
+		CachedController->SetBlackBoardValue(GetActorLocation(), FinishLocation->GetActorLocation(), Character->MovementType);
+
 	}
+}
+
+void ATGSpawnerActor::SpawnEffects()
+{
+	if(!SpawnerEffect)
+		SpawnerEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SpawnNiagaraSystem, GetActorLocation() + FVector(0.0f, 0.0f, 100.0f), GetActorRotation(), ParticleScale);
+
+	if(!FinishEffect)
+		FinishEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FinishNiagaraSystem, FinishLocation->GetActorLocation(), GetActorRotation(), ParticleScale);
+
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SpawnSound, GetActorLocation());
 }
 

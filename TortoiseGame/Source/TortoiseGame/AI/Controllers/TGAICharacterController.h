@@ -20,6 +20,8 @@ public:
 
 	void SetBlackBoardValue(FVector StartPosition, FVector FinishPosition, EMovementType MoveType);
 
+	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
+
 private:
 	TWeakObjectPtr<class ATGBaseAICharacter> CachedAICharacter;
 };
